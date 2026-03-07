@@ -172,14 +172,6 @@ export default function Home() {
             ))}
           </div>
         </div>
-
-        {/* Scroll hint */}
-        <div
-          className={`absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 ${isDark ? "text-white/20" : "text-slate-300"}`}
-        >
-          <span className="text-[10px] uppercase tracking-widest">Scroll</span>
-          <div className="w-px h-8 bg-gradient-to-b from-current to-transparent animate-pulse" />
-        </div>
       </section>
 
       {/* ── Features ── */}

@@ -78,7 +78,7 @@ const isOffTopic = (msg) => {
 };
 
 // ─── Intent Patterns ──────────────────────────────────────────────────────────
-// ORDER MATTERS — specific intents must come before generic ones
+
 const INTENTS = {
   greeting: /^(hi|hello|hey|howdy|sup|what'?s up|greetings)[!?.,\s]*$/i,
   internship: /intern(ship)?/i,
@@ -86,11 +86,11 @@ const INTENTS = {
     /contact|email|linkedin|github|twitter|reach out|get in touch|portfolio/i,
   skills: /skill|tech(nolog)?|stack|tools?|expertise|know|language/i,
   education: /educat|degree|college|university|stud(y|ied|ying)|school|qualif/i,
-  experience: /experience|work(ed|ing)?|background|career|professional/i,
+  availability:
+    /freelanc|open to work|open for work|hire(d)?|available|opportunit/i,
+  experience: /experience|worked|working|background|career|professional/i,
   hobbies: /hobb(y|ies)|interest|passion|free time|like to do|fun/i,
-  availability: /freelanc|open to work|job|hire(d)?|available|opportunit/i,
-  projects:
-    /^(what|show|list|tell).*(projects?|built|made|created|developed|work(ed)? on)/i,
+  projects: /^(what|show|list)\s+(are\s+)?(his\s+)?projects?/i,
   summary:
     /who (is|are)|introduce|about (him|you|yourself)|tell me about (tejas|him)/i,
 };

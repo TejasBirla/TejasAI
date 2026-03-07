@@ -12,8 +12,17 @@ dotenv.config();
 
 const app = express();
 
+const ALLOWED_ORIGIN =
+  process.env.FRONTEND_URL || "https://tejas-personal-ai.vercel.app";
+
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: ALLOWED_ORIGIN,
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+    credentials: true,
+  }),
+);
 
 app.get("/", (req, res) => {
   res.status(200).send("Server working fine.");
@@ -32,7 +41,11 @@ const startServer = async () => {
     const server = http.createServer(app);
 
     const io = new Server(server, {
-      cors: { origin: "*" },
+      cors: {
+        origin: ALLOWED_ORIGIN,
+        methods: ["GET", "POST"],
+        credentials: true,
+      },
     });
 
     io.on("connect", (socket) => {

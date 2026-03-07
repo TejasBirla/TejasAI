@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { X, Plus } from "lucide-react";
 import AdminLayout from "../components/AdminLayout";
 import useAdmin from "../context/useAdmin";
 
@@ -66,6 +66,15 @@ function TextareaField({
   );
 }
 
+const emptyEdu = {
+  degree: "",
+  institute: "",
+  startYear: "",
+  yearOfPassing: "",
+  grade: "",
+  description: "",
+};
+
 export default function AdminProfile() {
   const { authHeaders } = useAdmin();
   const [profile, setProfile] = useState(null);
@@ -81,7 +90,6 @@ export default function AdminProfile() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  // Always fetch existing profile on mount
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -114,6 +122,31 @@ export default function AdminProfile() {
     }));
   };
 
+  // ── Education handlers
+  const handleEduChange = (index, e) => {
+    const { name, value } = e.target;
+    setProfile((prev) => {
+      const updated = [...prev.education];
+      updated[index] = { ...updated[index], [name]: value };
+      return { ...prev, education: updated };
+    });
+  };
+
+  const addEducation = () => {
+    setProfile((prev) => ({
+      ...prev,
+      education: [...(prev.education || []), { ...emptyEdu }],
+    }));
+  };
+
+  const removeEducation = (index) => {
+    setProfile((prev) => ({
+      ...prev,
+      education: prev.education.filter((_, i) => i !== index),
+    }));
+  };
+
+  // ── Skills handlers
   const addSkill = () => {
     const s = skillInput.trim();
     if (!s || profile.skills.includes(s)) return;
@@ -127,6 +160,7 @@ export default function AdminProfile() {
       skills: prev.skills.filter((s) => s !== skill),
     }));
 
+  // ── Hobbies handlers
   const addHobby = () => {
     const h = hobbyInput.trim();
     if (!h || profile.hobbies.includes(h)) return;
@@ -143,7 +177,6 @@ export default function AdminProfile() {
   const toggleAvailability = (name) =>
     setProfile((prev) => ({ ...prev, [name]: !prev[name] }));
 
-  // Always PATCH — profile already exists
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -313,9 +346,7 @@ export default function AdminProfile() {
               >
                 <div
                   onClick={() => toggleAvailability(name)}
-                  className={`relative w-10 h-5 rounded-full transition-all duration-300 cursor-pointer ${
-                    profile[name] ? "bg-violet-500" : "bg-white/10"
-                  }`}
+                  className={`relative w-10 h-5 rounded-full transition-all duration-300 cursor-pointer ${profile[name] ? "bg-violet-500" : "bg-white/10"}`}
                 >
                   <div
                     className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all duration-300"
@@ -327,6 +358,81 @@ export default function AdminProfile() {
                 </span>
               </label>
             ))}
+          </div>
+        </Section>
+
+        {/* Education */}
+        <Section title="Education">
+          <div className="space-y-4">
+            {(profile.education || []).map((edu, index) => (
+              <div
+                key={index}
+                className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4 space-y-3 relative"
+              >
+                {/* Remove button */}
+                <button
+                  onClick={() => removeEducation(index)}
+                  className="absolute top-3 right-3 text-white/25 hover:text-red-400 transition-colors cursor-pointer"
+                >
+                  <X size={14} />
+                </button>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <InputField
+                    label="Degree / Qualification"
+                    name="degree"
+                    value={edu.degree}
+                    onChange={(e) => handleEduChange(index, e)}
+                    placeholder="Bachelor of Computer Applications"
+                  />
+                  <InputField
+                    label="Institute"
+                    name="institute"
+                    value={edu.institute}
+                    onChange={(e) => handleEduChange(index, e)}
+                    placeholder="Swift College, MDS University"
+                  />
+                  <InputField
+                    label="Start Year"
+                    name="startYear"
+                    value={edu.startYear}
+                    onChange={(e) => handleEduChange(index, e)}
+                    placeholder="2023"
+                  />
+                  <InputField
+                    label="Year of Passing"
+                    name="yearOfPassing"
+                    value={edu.yearOfPassing}
+                    onChange={(e) => handleEduChange(index, e)}
+                    placeholder="2026 (or leave blank if ongoing)"
+                  />
+                  <InputField
+                    label="Grade / Percentage"
+                    name="grade"
+                    value={edu.grade}
+                    onChange={(e) => handleEduChange(index, e)}
+                    placeholder="Pursuing / 92.4%"
+                  />
+                </div>
+                <TextareaField
+                  label="Description (optional)"
+                  name="description"
+                  value={edu.description}
+                  onChange={(e) => handleEduChange(index, e)}
+                  placeholder="Brief description of what you studied..."
+                  rows={2}
+                />
+              </div>
+            ))}
+
+            {/* Add education button */}
+            <button
+              onClick={addEducation}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-white/20 text-white/40 hover:text-white/70 hover:border-white/40 text-sm transition-all duration-200 cursor-pointer w-full justify-center"
+            >
+              <Plus size={14} />
+              Add Education
+            </button>
           </div>
         </Section>
 

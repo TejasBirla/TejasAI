@@ -16,7 +16,7 @@ export default function AdminDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [statsError, setStatsError] = useState("");
-  const [activeModal, setActiveModal] = useState(null); // "skills" | "profile" | null
+  const [activeModal, setActiveModal] = useState(null);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -267,7 +267,7 @@ export default function AdminDashboard() {
       {/* ── Profile Modal (read-only) ─────────────────────────── */}
       {activeModal === "profile" && stats.profile && (
         <Modal title="Profile Overview" onClose={() => setActiveModal(null)}>
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1 [&::-webkit-scrollbar]:hidden">
             <ReadRow label="Full Name" value={stats.profile.fullName} />
             <ReadRow label="Title" value={stats.profile.title} />
             <ReadRow label="Bio" value={stats.profile.bio} />
@@ -283,7 +283,34 @@ export default function AdminDashboard() {
               label="Freelance"
               value={stats.profile.freelanceAvailable ? "Yes" : "No"}
             />
+
+            {/* Education */}
+            {stats.profile.education?.length > 0 && (
+              <div className="pt-2">
+                <p className="text-xs font-bold text-white/30 uppercase tracking-widest mb-2">
+                  Education
+                </p>
+                <div className="space-y-2">
+                  {stats.profile.education.map((edu, i) => (
+                    <div
+                      key={i}
+                      className="rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2.5 text-sm"
+                    >
+                      <p className="text-white/70 font-medium">{edu.degree}</p>
+                      <p className="text-white/40 text-xs mt-0.5">
+                        {edu.institute}
+                      </p>
+                      <p className="text-white/30 text-xs">
+                        {edu.startYear} – {edu.yearOfPassing || "Present"}
+                        {edu.grade ? ` · ${edu.grade}` : ""}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
+
           <div className="mt-5 flex justify-end">
             <Link
               to="/admin/profile"
@@ -310,7 +337,7 @@ function Modal({ title, onClose, children }) {
         className="fixed inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/[0.08] bg-[#0e0e1a] p-6 shadow-2xl">
+      <div className="relative z-10 w-full max-w-lg rounded-2xl border border-white/[0.08] bg-[#0e0e1a] p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-base font-bold text-white">{title}</h3>
           <button
@@ -332,7 +359,9 @@ function ReadRow({ label, value }) {
   return (
     <div className="flex gap-3 text-sm">
       <span className="text-white/35 w-24 flex-shrink-0">{label}</span>
-      <span className="text-white/70 break-all">{value}</span>
+      <span className="text-white/70 break-words min-w-0 flex-1">
+        {value}
+      </span>{" "}
     </div>
   );
 }

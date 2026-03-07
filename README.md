@@ -6,7 +6,7 @@ A full-stack AI-powered portfolio assistant built with the MERN stack. Visitors 
 
 ## 🔗 Live Link
 
-[🚀 Visit TejasAI](https://tejasai.vercel.app)
+[🚀 Visit TejasAI](https://tejas-personal-ai.vercel.app)
 
 ---
 

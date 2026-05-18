@@ -1,0 +1,79 @@
+name: Atomica
+on:
+  workflow_dispatch: {}
+  pull_request: {}
+  push:
+    branches:
+      - main
+  # schedule:
+  #   # random HH:MM to avoid a load spike on GitHub Actions at 00:00
+  #   - cron: '12 15 * * *'
+
+jobs:
+  atomica:
+    name: atomica/ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    env:
+      RESULTS_URL: https://atomica-backend-468991892236.asia-south1.run.app/api/v1/cicd-callback/scan-results
+      PR_INFO_URL: https://atomica-backend-468991892236.asia-south1.run.app/api/v1/cicd-callback/pr-info
+    container:
+      image: shadab0565/atomica
+    if: (github.actor != 'dependabot[bot]')
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Send PR Info
+        if: github.event_name == 'pull_request'
+        run: |
+          PR_INFO=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}")
+          
+          # Add repository_id to PR info
+          REPO_INFO=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}")
+          
+          # Combine PR and repo info
+          PR_INFO=$(echo $PR_INFO | jq --arg repo_id "$(echo $REPO_INFO | jq -r '.id')" '. + {"repository_id": $repo_id}')
+          
+          # Send to backend
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d "$PR_INFO" \
+            ${{ env.PR_INFO_URL }}
+      
+      - name: Run Atomica Scan
+        run: |
+          pwd
+          ls -la
+          semgrep --config auto --json . > atomica-results.json
+      
+      - name: Send Results to Webhook
+        run: |
+          # Get repository info
+          REPO_INFO=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}")
+          
+          # Get PR info if this is a PR
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            PR_INFO=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}")
+            PR_NUMBER=${{ github.event.pull_request.number }}
+          else
+            PR_INFO="{}"
+            PR_NUMBER=""
+          fi
+          
+          # Construct URL with query parameters
+          RESULTS_URL="${{ env.RESULTS_URL }}?repository_id=$(echo $REPO_INFO | jq -r '.id')"
+          if [ ! -z "$PR_NUMBER" ]; then
+            RESULTS_URL="${RESULTS_URL}&pull_request_id=$PR_NUMBER"
+          fi
+          
+          # Send results with query parameters
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d @atomica-results.json \
+            "$RESULTS_URL"
